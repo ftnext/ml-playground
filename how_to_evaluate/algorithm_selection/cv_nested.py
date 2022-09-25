@@ -1,3 +1,5 @@
+import argparse
+
 import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import (
@@ -9,7 +11,16 @@ from sklearn.model_selection import (
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
+ALGORITHMS = ("DTree", "SVM")
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="mode")
+    _ = subparsers.add_parser("search")
+    evaluate_parser = subparsers.add_parser("evaluate")
+    evaluate_parser.add_argument("algorithm", choices=ALGORITHMS)
+    args = parser.parse_args()
+
     iris = load_iris()
     X = iris.data
     y = iris.target
@@ -34,7 +45,7 @@ if __name__ == "__main__":
     gridcvs = {}
     inner_cv = StratifiedKFold(n_splits=2, shuffle=True, random_state=42)
     for param_grid, estimator, name in zip(
-        (param_dtree, param_svc), (dtree, svc), ("DTree", "SVM")
+        (param_dtree, param_svc), (dtree, svc), ALGORITHMS
     ):
         gcv = GridSearchCV(
             estimator,
@@ -46,15 +57,16 @@ if __name__ == "__main__":
         )
         gridcvs[name] = gcv
 
-    outer_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    for name, gs_est in sorted(gridcvs.items()):
-        nested_scores = cross_val_score(
-            gs_est, X_train, y_train, cv=outer_cv, verbose=1
-        )
-        print(f"# of CV iterations: {len(nested_scores)}")
-        print(
-            f"{name} | outer ACC: {nested_scores.mean() * 100:.2f}% "
-            f"+/- {nested_scores.std() * 100:.2f}"
-        )
+    if args.mode == "search":
+        outer_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        for name, gs_est in sorted(gridcvs.items()):
+            nested_scores = cross_val_score(
+                gs_est, X_train, y_train, cv=outer_cv, verbose=1
+            )
+            print(f"# of CV iterations: {len(nested_scores)}")
+            print(
+                f"{name} | outer ACC: {nested_scores.mean() * 100:.2f}% "
+                f"+/- {nested_scores.std() * 100:.2f}"
+            )
 
     # TODO 選ばれたモデルを訓練セットで訓練し、testセットを使って汎化性能を評価
