@@ -69,4 +69,13 @@ if __name__ == "__main__":
                 f"+/- {nested_scores.std() * 100:.2f}"
             )
 
-    # TODO 選ばれたモデルを訓練セットで訓練し、testセットを使って汎化性能を評価
+    if args.mode == "evaluate":
+        best_algo = gridcvs[args.algorithm]
+        best_algo.fit(X_train, y_train)
+
+        print(f"ACC (average over CV test folds): {best_algo.best_score_}")
+        print(f"Best parameters: {best_algo.best_params_}")
+        print(
+            f"Training accuracy: {best_algo.score(X_train, y_train) * 100:.2f}"
+        )
+        print(f"Test accuracy: {best_algo.score(X_test, y_test) * 100:.2f}")
