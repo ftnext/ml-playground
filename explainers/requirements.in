@@ -1,0 +1,2 @@
+-r ../requirements.in
+lime==0.2.0.1
