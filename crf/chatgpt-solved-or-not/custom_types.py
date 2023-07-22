@@ -13,3 +13,7 @@ class Example(Conll03Example):
 
 class Prediction(Example):
     response: str
+
+
+class ParsedPrediction(Prediction):
+    predicted_tags: list[int]
