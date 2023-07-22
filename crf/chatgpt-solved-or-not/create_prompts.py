@@ -1,22 +1,13 @@
 import argparse
 from collections.abc import Generator
-from typing import Literal, TypedDict
+from typing import Literal
 
 import jsonlines
 from datasets import load_dataset
 from langchain.prompts import HumanMessagePromptTemplate
 
+from custom_types import Conll03Example, Example
 from instructions import get_instruction
-
-
-class Conll03Example(TypedDict):
-    id: str
-    tokens: list[str]
-    ner_tags: list[int]
-
-
-class Example(Conll03Example):
-    prompt: str
 
 
 def load_test_set() -> Generator[Conll03Example, None, None]:
