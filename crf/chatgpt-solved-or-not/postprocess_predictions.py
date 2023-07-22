@@ -48,6 +48,8 @@ def parse_response(response: str | None) -> list[list[str]]:
     []
     >>> parse_response("[] ")
     []
+    >>> parse_response("[[], [], [], []]")
+    []
     """
     if response is None:
         return []
@@ -74,7 +76,7 @@ def parse_response(response: str | None) -> list[list[str]]:
 
     if isinstance(literal, list):
         if isinstance(literal[0], list):  # ネストしたリストで返すときがある
-            return literal
+            return list(filter(None, literal))
         return [literal]  # ネストしていないリストの場合
     if isinstance(literal, tuple):  # カンマを含んでいる場合
         return list(filter(lambda list_: len(list_) == 2, literal))
