@@ -1,3 +1,4 @@
+backoff
 datasets
 jsonlines
 langchain==0.0.239
