@@ -9,3 +9,7 @@ class Conll03Example(TypedDict):
 
 class Example(Conll03Example):
     prompt: str
+
+
+class Prediction(Example):
+    response: str
