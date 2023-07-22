@@ -31,11 +31,12 @@ def load_test_set() -> Generator[Conll03Example, None, None]:
 
 def build_prompt_template(instruction_number: Literal[1, 2, 3, 4, 5]) -> str:
     instruction = get_instruction(instruction_number)
+    # Zero shot https://github.com/FreedomIntelligence/Evaluation-of-ChatGPT-on-Information-Extraction/blob/bda6894cffd041ff629ba1c2c9473e757ba217eb/1_NER/ner_test_with_api.py#L71
     template = (
         instruction
         + """\
-Sentence: {sentence}
-Answer:\
+Given sentence:
+"{sentence}"\
 """
     )
     return HumanMessagePromptTemplate.from_template(template)
