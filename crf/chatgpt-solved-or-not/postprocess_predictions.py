@@ -36,29 +36,40 @@ def parse_response(response: str) -> list[list[str]]:
     Traceback (most recent call last):
       ...
     ValueError: '["Location", "Syria"] (no Person entity is mentioned)'
+    >>> parse_response("[]")
+    []
+    >>> parse_response('[] (no entity for "favourites")')
+    Traceback (most recent call last):
+      ...
+    ValueError: '[] (no entity for "favourites")'
+    >>> parse_response('[["Person", "Takuya Takagi"], ["Location", "group C"]]')
+    [['Person', 'Takuya Takagi'], ['Location', 'group C']]
     """
-    response = re.sub(r"\[\]", "", response)  # []は除く
+    if response == "[]":
+        return []
+
     if "\n" in response:
         chunks = response.rstrip().split("\n")
         results = []
         for chunk in chunks:
             results.extend(parse_response(chunk))
         return results
-    if '["' not in response:  # ダブルクォートが付いていない場合は付けて再度呼び出す
-        corrected = re.sub(
-            r"\[(Location|Miscellaneous|Person|Organization),",
-            r'["\1",',
-            response,
-        )
-        return parse_response(corrected)
 
+    # Entity typeにダブルクォートが付いていない場合は付ける
+    response = re.sub(
+        r"\[(Location|Miscellaneous|Person|Organization),",
+        r'["\1",',
+        response,
+    )
     try:
         literal = ast.literal_eval(response)
     except SyntaxError:  # ChatGPTが指示に従わず、後処理で拾えない場合
         raise ValueError(repr(response))
 
     if isinstance(literal, list):
-        return [literal]
+        if isinstance(literal[0], list):  # ネストしたリストで返すときがある
+            return literal
+        return [literal]  # ネストしていないリストの場合
     if isinstance(literal, tuple):  # カンマを含んでいる場合
         return list(filter(lambda list_: len(list_) == 2, literal))
 
@@ -74,6 +85,13 @@ def get_index(tokens: list[str], word: str) -> int:
         return tokens.index(word)
     else:  # len(word.split()) >= 2:
         return tokens.index(word.split()[0])
+
+
+def is_in_tokens(word: str, tokens: list[str]) -> bool:
+    if len(word.split()) == 1:
+        return word in set(tokens)
+    else:
+        return set(word.split()) <= set(tokens)
 
 
 def as_iob2_format(
@@ -92,9 +110,21 @@ def as_iob2_format(
     ['B-LOC', 'I-LOC', 'I-LOC', 'B-MISC']
     >>> as_iob2_format(["their", "opening", "meeting", "against", "Syria"], [["Location", "Syria"], ["Organization", "opening meeting"]])
     ['O', 'B-ORG', 'I-ORG', 'O', 'B-LOC']
+    >>> as_iob2_format(["Friday"], [["Date", "Friday"]])
+    ['O']
+    >>> as_iob2_format(["JAPAN"], [["Location", "Japan"]])
+    ['O']
     """
+    # ChatGPTが指定した4つの固有表現タイプ以外も入れてくるので除く（例：Date）
+    only_four_types = filter(
+        lambda e: e[0] in verbose2short, recognized_entities
+    )
+    # ChatGPTがtokenのママ返さないときは除く（例：JAPANなのにJapanに変換して返す）
+    only_same_tokens = filter(
+        lambda e: is_in_tokens(e[1], tokens), only_four_types
+    )
     recognized_entities = sorted(
-        recognized_entities, key=lambda e: get_index(tokens, e[1])
+        only_same_tokens, key=lambda e: get_index(tokens, e[1])
     )
 
     iob2_tags = []
