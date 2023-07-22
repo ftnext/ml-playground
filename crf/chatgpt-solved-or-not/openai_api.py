@@ -4,6 +4,7 @@ from collections.abc import Generator, Iterable
 from pathlib import Path
 from typing import TypedDict
 
+import backoff
 import jsonlines
 import openai
 from more_itertools import chunked
@@ -37,16 +38,12 @@ async def call_api(
     responses: list[OpenAIResponse] = []
     for chunk in chunked(propmts, chunk_size):
         coroutines = [
-            openai.ChatCompletion.acreate(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=temperature,
-            )
-            for prompt in chunk
+            _single_call(prompt, model, temperature) for prompt in chunk
         ]
         results = await asyncio.gather(*coroutines, return_exceptions=True)
         for result in results:
             if isinstance(result, Exception):
+                print(repr(result))
                 responses.append({"response": None})
             else:
                 responses.append(
@@ -57,6 +54,26 @@ async def call_api(
                     }
                 )
     return responses
+
+
+@backoff.on_exception(
+    backoff.expo,
+    (
+        openai.error.RateLimitError,
+        openai.error.APIConnectionError,
+        openai.error.APIError,
+        openai.error.ServiceUnavailableError,
+    ),
+    max_tries=3,
+)
+async def _single_call(
+    prompt: str, model: str = "gpt-3.5-turbo-0301", temperature: float = 0.0
+):
+    return await openai.ChatCompletion.acreate(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=temperature,
+    )
 
 
 def response_added_example_generator(
