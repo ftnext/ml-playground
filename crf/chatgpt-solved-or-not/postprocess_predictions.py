@@ -16,7 +16,7 @@ verbose2short = {
 }
 
 
-def parse_response(response: str) -> list[list[str]]:
+def parse_response(response: str | None) -> list[list[str]]:
     r"""
     Returns [["Entity type", "Named entity"], ["Entity type", "Named entity"], ...]
 
@@ -44,8 +44,14 @@ def parse_response(response: str) -> list[list[str]]:
     ValueError: '[] (no entity for "favourites")'
     >>> parse_response('[["Person", "Takuya Takagi"], ["Location", "group C"]]')
     [['Person', 'Takuya Takagi'], ['Location', 'group C']]
+    >>> parse_response(None)  # APIエラーのときはNoneにしている
+    []
+    >>> parse_response("[] ")
+    []
     """
-    if response == "[]":
+    if response is None:
+        return []
+    if response.strip() == "[]":
         return []
 
     if "\n" in response:
