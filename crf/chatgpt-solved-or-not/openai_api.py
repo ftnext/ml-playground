@@ -1,6 +1,6 @@
 import argparse
 import asyncio
-from collections.abc import Generator, Iterable
+from collections.abc import AsyncGenerator, AsyncIterable, Generator, Iterable
 from pathlib import Path
 from typing import TypedDict
 
@@ -34,8 +34,7 @@ async def call_api(
     chunk_size: int,
     model: str = "gpt-3.5-turbo-0301",
     temperature: float = 0.0,
-) -> list[OpenAIResponse]:
-    responses: list[OpenAIResponse] = []
+) -> AsyncGenerator[OpenAIResponse, None, None]:
     for chunk in chunked(propmts, chunk_size):
         coroutines = [
             _single_call(prompt, model, temperature) for prompt in chunk
@@ -44,16 +43,13 @@ async def call_api(
         for result in results:
             if isinstance(result, Exception):
                 print(repr(result))
-                responses.append({"response": None})
+                yield {"response": None}
             else:
-                responses.append(
-                    {
-                        "response": result["choices"][0]["message"][
-                            "content"
-                        ].strip()
-                    }
-                )
-    return responses
+                yield {
+                    "response": result["choices"][0]["message"][
+                        "content"
+                    ].strip()
+                }
 
 
 @backoff.on_exception(
@@ -76,19 +72,23 @@ async def _single_call(
     )
 
 
-def response_added_example_generator(
-    examples: Iterable[Example], responses: Iterable[OpenAIResponse]
-) -> Generator[Prediction, None, None]:
-    for example, response in zip(examples, responses):
+async def response_added_example_generator(
+    examples: Iterable[Example], responses: AsyncIterable[OpenAIResponse]
+) -> AsyncGenerator[Prediction, None, None]:
+    examples_generator = (e for e in examples)
+    async for response in responses:
+        example = next(examples_generator)
         yield example | response
 
 
 async def main(input_path: Path, output_path: Path, chunk_size: int):
     examples = load_examples(input_path)
-    responses = await call_api(tqdm(prompts_generator(examples)), chunk_size)
-
+    responses = call_api(tqdm(prompts_generator(examples)), chunk_size)
     with jsonlines.open(output_path, "w") as writer:
-        writer.write_all(response_added_example_generator(examples, responses))
+        async for example in response_added_example_generator(
+            examples, responses
+        ):
+            writer.write(example)
 
 
 if __name__ == "__main__":
