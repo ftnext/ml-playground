@@ -8,31 +8,45 @@ model_name = "cl-tohoku/bert-base-japanese-v3"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 
+def tokenize(text: str, tokenizer: PreTrainedTokenizer) -> list[str]:
+    """
+    >>> tokenize("大谷翔平は岩手県水沢市出身", tokenizer)
+    ['[CLS]', '大谷', '翔', '##平', 'は', '岩手', '県', '水沢', '市', '出身', '[SEP]']
+    """
+    return tokenizer.convert_ids_to_tokens(tokenizer.encode(text))
+
+
+def get_char_to_token_alignments(
+    text: str, tokens: list[str]
+) -> list[list[int]]:
+    assert text == "".join(t.lstrip("#") for t in tokens[1:-1])
+
+    characters = list(text)
+    # [[1], [1], [1], [2], [2]] のように、何文字目が何番目のトークンかを表す
+    char_to_token_indices, _ = get_alignments(characters, tokens)
+    return char_to_token_indices
+
+
 class Entity(TypedDict):
     name: str
     span: list[int]
     type: str
 
 
-def output_tokens_and_labels(
-    text: str, entities: Iterable[Entity], tokenizer: PreTrainedTokenizer
-) -> tuple[list[str], list[str]]:
+def output_labels(
+    text: str, tokens: list[str], entities: Iterable[Entity]
+) -> list[str]:
     """
     >>> text = "大谷翔平は岩手県水沢市出身"
+    >>> tokens = ["[CLS]", "大谷", "翔", "##平", "は", "岩手", "県", "水沢", "市", "出身", "[SEP]"]
     >>> entities = [
     ...   {"name": "大谷翔平", "span": [0, 4], "type": "人名"},
     ...   {"name": "岩手県水沢市", "span": [5, 11], "type": "地名"},
     ... ]
-    >>> tokens, labels = output_tokens_and_labels(text, entities, tokenizer)
-    >>> tokens
-    ['[CLS]', '大谷', '翔', '##平', 'は', '岩手', '県', '水沢', '市', '出身', '[SEP]']
-    >>> labels
+    >>> output_labels(text, tokens, entities)
     ['-', 'B-人名', 'I-人名', 'I-人名', 'O', 'B-地名', 'I-地名', 'I-地名', 'I-地名', 'O', '-']
     """
-    characters = list(text)
-    tokens = tokenizer.convert_ids_to_tokens(tokenizer.encode(text))
-    # [[1], [1], [1], [2], [2]] のように、何文字目が何番目のトークンかを表す
-    char_to_token_indices, _ = get_alignments(characters, tokens)
+    char_to_token_indices = get_char_to_token_alignments(text, tokens)
 
     labels = ["O"] * len(tokens)
     for entity in entities:
@@ -48,4 +62,4 @@ def output_tokens_and_labels(
     labels[0] = "-"
     labels[-1] = "-"
 
-    return tokens, labels
+    return labels
