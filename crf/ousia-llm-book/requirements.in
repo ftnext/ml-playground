@@ -1,0 +1,4 @@
+datasets
+transformers[ja,torch]
+spacy-alignments
+seqeval
