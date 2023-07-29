@@ -60,33 +60,39 @@ def convert_results_to_labels(
     >>> pred_labels
     [['B-人名', 'I-人名', 'I-人名', 'I-人名', 'O', 'B-地名', 'I-地名', 'I-地名', 'B-施設名', 'I-施設名', 'I-施設名', 'O', 'O']]
     """
-    true_labels, pred_labels = [], []
-    for result in results:
-        true_labels.append(
-            create_character_labels(result["text"], result["entities"])
-        )
-        pred_labels.append(
-            create_character_labels(result["text"], result["pred_entities"])
-        )
+    return convert_true_labels(results), convert_pred_labels(results)
 
-    return true_labels, pred_labels
+
+def convert_true_labels(results: Iterable[Result]) -> list[list[str]]:
+    return [
+        create_character_labels(result["text"], result["entities"])
+        for result in results
+    ]
+
+
+def convert_pred_labels(results: Iterable[Result]) -> list[list[str]]:
+    return [
+        create_character_labels(result["text"], result["pred_entities"])
+        for result in results
+    ]
 
 
 if __name__ == "__main__":
     results = [
-        {
-            "text": "大谷翔平は岩手県水沢市出身",
-            "entities": [
+        Result(
+            text="大谷翔平は岩手県水沢市出身",
+            entities=[
                 {"name": "大谷翔平", "span": [0, 4], "type": "人名"},
                 {"name": "岩手県水沢市", "span": [5, 11], "type": "地名"},
             ],
-            "pred_entities": [
+            pred_entities=[
                 {"name": "大谷翔平", "span": [0, 4], "type": "人名"},
                 {"name": "岩手県", "span": [5, 8], "type": "地名"},
                 {"name": "水沢市", "span": [8, 11], "type": "施設名"},
             ],
-        }
+        )
     ]
 
-    true_labels, pred_labels = convert_results_to_labels(results)
+    true_labels = convert_true_labels(results)
+    pred_labels = convert_pred_labels(results)
     print(classification_report(true_labels, pred_labels))
