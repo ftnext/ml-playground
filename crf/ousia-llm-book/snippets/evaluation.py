@@ -4,11 +4,7 @@ from typing import TypedDict
 from seqeval.metrics import classification_report
 from seqeval.metrics.sequence_labeling import precision_recall_fscore_support
 
-
-class Entity(TypedDict):
-    name: str
-    span: list[int]
-    type: str
+from data_types import Entity
 
 
 def create_character_labels(

@@ -1,8 +1,9 @@
 from collections.abc import Iterable
-from typing import TypedDict
 
 from spacy_alignments import get_alignments
 from transformers import AutoTokenizer, PreTrainedTokenizer
+
+from data_types import Entity
 
 model_name = "cl-tohoku/bert-base-japanese-v3"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -25,12 +26,6 @@ def get_char_to_token_alignments(
     # [[1], [1], [1], [2], [2]] のように、何文字目が何番目のトークンかを表す
     char_to_token_indices, _ = get_alignments(characters, tokens)
     return char_to_token_indices
-
-
-class Entity(TypedDict):
-    name: str
-    span: list[int]
-    type: str
 
 
 def output_labels(
