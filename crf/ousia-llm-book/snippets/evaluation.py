@@ -2,6 +2,7 @@ from collections.abc import Iterable
 from typing import TypedDict
 
 from seqeval.metrics import classification_report
+from seqeval.metrics.sequence_labeling import precision_recall_fscore_support
 
 
 class Entity(TypedDict):
@@ -77,6 +78,21 @@ def convert_pred_labels(results: Iterable[Result]) -> list[list[str]]:
     ]
 
 
+class Scores(TypedDict):
+    precision: float
+    recall: float
+    f1_score: float
+
+
+def compute_scores(
+    true_labels: list[list[str]], pred_labels: list[list[str]], average: str
+) -> Scores:
+    precision, recall, fscore, _ = precision_recall_fscore_support(
+        true_labels, pred_labels, average=average
+    )
+    return {"precision": precision, "recall": recall, "f1_score": fscore}
+
+
 if __name__ == "__main__":
     results = [
         Result(
@@ -96,3 +112,5 @@ if __name__ == "__main__":
     true_labels = convert_true_labels(results)
     pred_labels = convert_pred_labels(results)
     print(classification_report(true_labels, pred_labels))
+
+    print(compute_scores(true_labels, pred_labels, "micro"))
