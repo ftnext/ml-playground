@@ -1,0 +1,21 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+inputs:
+  text:
+    type: string
+    default: こんにちは！あなたのことをなんと呼べばいいですか？
+outputs:
+  response:
+    type: string
+    reference: ${llm_node.output}
+nodes:
+- name: llm_node
+  type: llm
+  source:
+    type: code
+    path: llm_node.jinja2
+  inputs:
+    model: gpt-4o-mini
+    max_tokens: 20
+    question: ${inputs.text}
+  connection: open_ai_connection
+  api: chat
