@@ -1,0 +1,5 @@
+# ref: https://github.com/microsoft/promptflow/blob/promptflow_1.17.1/examples/connections/openai.yml
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/OpenAIConnection.schema.json
+name: open_ai_connection
+type: open_ai
+api_key: "<user-input>"
