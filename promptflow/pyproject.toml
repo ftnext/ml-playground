@@ -2,4 +2,7 @@
 name = "promptflow-example"
 version = "0.1.0"
 requires-python = ">=3.11, <3.12"
-dependencies = ["promptflow", "promptflow-tools"]
+dependencies = [
+    "promptflow",
+    "promptflow-tools @ git+https://github.com/microsoft/promptflow.git@promptflow_1.17.1#subdirectory=src/promptflow-tools",
+]

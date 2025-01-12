@@ -864,20 +864,17 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "promptflow" },
-    { name = "promptflow-tools" },
+    { name = "promptflow-tools", git = "https://github.com/microsoft/promptflow.git?subdirectory=src%2Fpromptflow-tools&rev=promptflow_1.17.1" },
 ]
 
 [[package]]
 name = "promptflow-tools"
 version = "1.4.0"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/microsoft/promptflow.git?subdirectory=src%2Fpromptflow-tools&rev=promptflow_1.17.1#f28f05196d9ede7bb71c72b8d03758d72551be8c" }
 dependencies = [
     { name = "google-search-results" },
     { name = "openai" },
     { name = "promptflow" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/d2/822e802440e0e0bd6d4c9b53a7f1e5d77ce5ca83eb5daebc6601db56d0b7/promptflow_tools-1.4.0-py3-none-any.whl", hash = "sha256:d502013bc4a2565c14b310f7966155b2c44d4695628a8b034a8cc63a5f0c3abb", size = 43084 },
 ]
 
 [[package]]
