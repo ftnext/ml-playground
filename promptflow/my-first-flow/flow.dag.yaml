@@ -14,8 +14,10 @@ nodes:
     type: code
     path: llm_node.jinja2
   inputs:
-    model: gpt-4o-mini
+    # model: gpt-4o-mini
+    model: gemini-2.0-flash-exp
     max_tokens: 20
     question: ${inputs.text}
-  connection: open_ai_connection
+  # connection: open_ai_connection
+  connection: gemini_connection
   api: chat
