@@ -1,0 +1,31 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  url:
+    type: string
+outputs:
+  url:
+    type: string
+    reference: ${inputs.url}
+  tags:
+    type: string
+    reference: ${summarize_with_llm.output}
+nodes:
+- name: fetch_text_content_from_url
+  type: python
+  source:
+    type: code
+    path: fetch_text_content_from_url.py
+  inputs:
+    url: ${inputs.url}
+- name: summarize_with_llm
+  type: llm
+  source:
+    type: code
+    path: summarize_with_llm.jinja2
+  inputs:
+    text: ${fetch_text_content_from_url.output}
+    model: gemini-2.0-flash-exp
+  connection: gemini_connection
+  api: chat

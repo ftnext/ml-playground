@@ -1,0 +1,28 @@
+{
+  "package": {},
+  "code": {
+    "fetch_text_content_from_url.py": {
+      "type": "python",
+      "inputs": {
+        "url": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "fetch_text_content_from_url.py",
+      "function": "fetch_text_content_from_url"
+    },
+    "summarize_with_llm.jinja2": {
+      "type": "llm",
+      "inputs": {
+        "text": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "summarize_with_llm.jinja2"
+    }
+  }
+}
