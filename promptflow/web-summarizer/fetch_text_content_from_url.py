@@ -13,7 +13,7 @@ from promptflow.core import tool
 
 @tool
 def fetch_text_content_from_url(url: str) -> str:
-    response = httpx.get(url)
+    response = httpx.get(url, follow_redirects=True)
     response.raise_for_status()
 
     response.encoding = "utf-8"
