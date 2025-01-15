@@ -17,7 +17,7 @@ def fetch_text_content_from_url(url: str) -> str:
     response.raise_for_status()
 
     response.encoding = "utf-8"
-    return MainContentExtractor.extract(response.text)
+    return MainContentExtractor.extract(response.text, output_format="markdown")
 
 
 if __name__ == "__main__":
