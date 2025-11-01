@@ -1,0 +1,29 @@
+name: Publish to GitHub Pages
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Sync published HTML
+        run: |
+          mkdir -p build/dspy
+          cp dspy/*.html build/dspy/
+
+      - name: Publish on GitHub Pages
+        uses: ftnext/action-push-ghpages@v1.0.0
+        with:
+          build_dir: build
+          github_token: ${{ secrets.GITHUB_TOKEN }}
