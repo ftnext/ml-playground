@@ -20,6 +20,7 @@ jobs:
       - name: Sync published HTML
         run: |
           mkdir -p build/dspy
+          touch build/.nojekyll
           cp dspy/*.html build/dspy/
 
       - name: Publish on GitHub Pages
