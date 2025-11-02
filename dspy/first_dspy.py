@@ -1,9 +1,10 @@
 # /// script
-# requires-python = ">=3.11"
+# requires-python = ">=3.11,<=3.13"
 # dependencies = [
 #     "datasets==4.3.0",
 #     "dspy==3.0.3",
 #     "marimo",
+#     "mlflow==3.5.1",
 # ]
 # ///
 
@@ -33,8 +34,35 @@ def _():
     from typing import Literal
 
     import dspy
+    import mlflow
     from datasets import load_dataset
-    return Literal, dspy, load_dataset, random
+    return Literal, dspy, load_dataset, mlflow, random
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    MLflow integration
+
+    ```shell
+    $ uvx --python 3.13 mlflow ui --port 5000 --backend-store-uri sqlite:///mlruns.db
+    [MLflow] Security middleware enabled with default settings (localhost-only). To allow connections from other hosts, use --host 0.0.0.0 and configure --allowed-hosts and --cors-allowed-origins.
+    ```
+    """)
+    return
+
+
+@app.cell
+def _(mlflow):
+    mlflow.set_tracking_uri("http://0.0.0.0:5000")
+    mlflow.set_experiment("Default")
+
+    mlflow.dspy.autolog(
+        log_compiles=True,
+        log_evals=True,
+        log_traces=True,
+    )
+    return
 
 
 @app.cell
